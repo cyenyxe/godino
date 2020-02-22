@@ -3,12 +3,13 @@ package dinoportal
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 )
 
 // RunWebPortalAPI runs the API that serves data into the portal
-func RunWebPortalAPI(address string) error {
+func RunWebPortalAPI(hostname string, port int) error {
 	http.HandleFunc("/", rootHandler)
-	return http.ListenAndServe(address, nil)
+	return http.ListenAndServe(hostname+":"+strconv.Itoa(port), nil)
 }
 
 func rootHandler(writer http.ResponseWriter, request *http.Request) {
