@@ -10,8 +10,7 @@ import (
 
 // Struct attributes must be capitalized for GORM to detect them
 type animal struct {
-	//gorm.Model
-	ID       uint
+	gorm.Model
 	Species  string `gorm:"size:64"`
 	Nickname string `gorm:"size:64;unique;not null"`
 	Zone     int
@@ -20,7 +19,8 @@ type animal struct {
 
 func main() {
 	// Connect to the database
-	db, err := gorm.Open("mysql", "dinoadmin:dinoadmin@/dino")
+	// Without 'parseTime' set, the mapping breaks when it gets to the dates
+	db, err := gorm.Open("mysql", "dinoadmin:dinoadmin@/dino?parseTime=true")
 	if err != nil {
 		log.Fatal(err)
 	}
