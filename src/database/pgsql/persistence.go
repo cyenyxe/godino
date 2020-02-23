@@ -44,6 +44,37 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(newID)
+
+	if err = queryByAgeMultiple(db, 10, 20, 50); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func queryByAgeMultiple(db *sql.DB, ages ...int) error {
+	tx, err := db.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare("select * from dino.animals where age > $1")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+
+	for _, age := range ages {
+		rows, err := stmt.Query(age)
+		if err != nil {
+			log.Fatal(err)
+		}
+		animals, err := handleRows(rows)
+		if err == nil {
+			fmt.Println(animals)
+		}
+	}
+
+	return tx.Commit()
 }
 
 // queryByAge retrieves animals above a certain age
@@ -54,6 +85,10 @@ func queryByAge(db *sql.DB, age int) ([]animal, error) {
 	}
 	defer rows.Close()
 
+	return handleRows(rows)
+}
+
+func handleRows(rows *sql.Rows) ([]animal, error) {
 	animals := []animal{}
 	for rows.Next() {
 		a := animal{}
@@ -62,11 +97,10 @@ func queryByAge(db *sql.DB, age int) ([]animal, error) {
 			log.Println(err)
 			continue
 		}
-
 		animals = append(animals, a)
 	}
 
-	err = rows.Err()
+	err := rows.Err()
 
 	return animals, err
 }
