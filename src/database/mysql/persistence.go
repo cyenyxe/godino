@@ -29,8 +29,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	fmt.Println(animals)
+
+	// Retrieve animal with a certain ID
+	a, err := queryByID(db, 1)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(a)
 }
 
 // queryByAge retrieves animals above a certain age
@@ -56,4 +62,13 @@ func queryByAge(db *sql.DB, age int) ([]animal, error) {
 	err = rows.Err()
 
 	return animals, err
+}
+
+func queryByID(db *sql.DB, id int) (animal, error) {
+	row := db.QueryRow("select * from dino.animals where id = ?", id)
+
+	a := animal{}
+	err := row.Scan(&a.id, &a.species, &a.nickname, &a.zone, &a.age)
+
+	return a, err
 }
