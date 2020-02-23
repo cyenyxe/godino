@@ -37,6 +37,13 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(a)
+
+	// Insert a new animal
+	newID, err := addNewAnimal(db, "Carnotaurus", "Carnitas", 3, 30)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(newID)
 }
 
 // queryByAge retrieves animals above a certain age
@@ -71,4 +78,14 @@ func queryByID(db *sql.DB, id int) (animal, error) {
 	err := row.Scan(&a.id, &a.species, &a.nickname, &a.zone, &a.age)
 
 	return a, err
+}
+
+func addNewAnimal(db *sql.DB, species string, nickname string, zone int, age int) (int64, error) {
+	result, err := db.Exec("insert into dino.animals (species, nickname, zone, age) values (?, ?, ?, ?)", species, nickname, zone, age)
+	if err != nil {
+		return -1, err
+	}
+
+	id, _ := result.LastInsertId()
+	return id, err
 }
