@@ -39,7 +39,7 @@ func main() {
 	databaseName := "dino"
 	collectionName := "animals"
 	collection := client.Database(databaseName).Collection(collectionName)
-	collection.Drop(ctx)
+	collection.DeleteMany(ctx, bson.M{})
 
 	if err := addNewAnimal(ctx, collection, "Tyrannousaurus rex", "T-Rex", 1, 10); err != nil {
 		log.Fatal(err)
@@ -61,10 +61,10 @@ func main() {
 	// a := queryByID(db, 1)
 	// fmt.Println(a)
 
-	// // Insert a duplicate animal
-	// if _, err = addNewAnimal(db, "Velociraptor", "Velo", 2, 20); err != nil {
-	// 	log.Println(err)
-	// }
+	// Insert a duplicate animal
+	if err = addNewAnimal(ctx, collection, "Velociraptor", "Velo", 2, 20); err != nil {
+		log.Println(err)
+	}
 }
 
 // queryByAge retrieves animals above a certain age
