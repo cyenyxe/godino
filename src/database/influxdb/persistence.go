@@ -50,17 +50,7 @@ func main() {
 	for {
 		// Populate data point for a random specimen with random values
 		i := rand.Intn(len(nicknameTags))
-		tags := map[string]string{
-			"nickname": nicknameTags[i],
-			"species":  speciesTags[i],
-		}
-		fields := map[string]interface{}{
-			"weight":      rand.Intn(500) + 1,
-			"temperature": rand.Intn(5) + 36,
-		}
-		fmt.Println(tags, fields["weight"], fields["temperature"])
-
-		point, err := client.NewPoint("health", tags, fields, time.Now())
+		point, err := generateHealthMetrics(speciesTags[i], nicknameTags[i])
 		if err != nil {
 			log.Println(err)
 			continue
@@ -74,18 +64,6 @@ func main() {
 
 		time.Sleep(100 * time.Millisecond)
 	}
-
-	// if err := addNewAnimal(ctx, collection, "Tyrannousaurus rex", "T-Rex", 1, 10); err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// if err = addNewAnimal(ctx, collection, "Velociraptor", "Raptor", 2, 25); err != nil {
-	// 	log.Fatal(err)
-	// }
-
-	// if err = addNewAnimal(ctx, collection, "Velociraptor", "Velo", 2, 20); err != nil {
-	// 	log.Fatal(err)
-	// }
 
 	// // Retrieve animals above a certain age
 	// animals := queryByAge(ctx, collection, 10)
@@ -115,6 +93,20 @@ func query(c client.Client, db string, query string) (results []client.Result, e
 		return results, response.Error()
 	}
 	return response.Results, nil
+}
+
+func generateHealthMetrics(species string, nickname string) (*client.Point, error) {
+	tags := map[string]string{
+		"species":  species,
+		"nickname": nickname,
+	}
+	fields := map[string]interface{}{
+		"weight":      rand.Intn(500) + 1,
+		"temperature": rand.Intn(5) + 36,
+	}
+	fmt.Println(tags, fields["weight"], fields["temperature"])
+
+	return client.NewPoint("health", tags, fields, time.Now())
 }
 
 // queryByAge retrieves animals above a certain age
