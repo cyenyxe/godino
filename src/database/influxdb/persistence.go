@@ -69,14 +69,9 @@ func main() {
 	// animals := queryByAge(ctx, collection, 10)
 	// fmt.Println(animals)
 
-	// // // Retrieve animal with a certain ID
-	// // a := queryByID(db, 1)
-	// // fmt.Println(a)
-
-	// // Insert a duplicate animal
-	// if err = addNewAnimal(ctx, collection, "Velociraptor", "Velo", 2, 20); err != nil {
-	// 	log.Println(err)
-	// }
+	// // Retrieve animal with a certain ID
+	// a := queryByID(db, 1)
+	// fmt.Println(a)
 }
 
 func query(c client.Client, db string, query string) (results []client.Result, err error) {
