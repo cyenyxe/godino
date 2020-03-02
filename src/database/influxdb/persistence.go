@@ -94,16 +94,24 @@ func main() {
 
 	wg.Wait()
 	close(done)
-	// // Retrieve animals above a certain age
-	// animals := queryByAge(ctx, collection, 10)
-	// fmt.Println(animals)
 
-	// // Retrieve animal with a certain ID
-	// a := queryByID(db, 1)
-	// fmt.Println(a)
+	// Now query the data that has been inserted
+	result, err := query(c, db, "select * from health where nickname = 'Raptor' limit 10")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, value := range result {
+		log.Println("Messages: ", value.Messages)
+		for _, s := range value.Series {
+			log.Println("Name: ", s.Name)
+			log.Println("Columns: ", s.Columns)
+			log.Println("Values: ", s.Values)
+		}
+	}
 }
 
-func query(c client.Client, db string, query string) (results []client.Result, err error) {
+func query(c client.Client, db string, query string, parameters ...string) (results []client.Result, err error) {
 	q := client.Query{
 		Command:  query,
 		Database: db,
@@ -119,7 +127,7 @@ func query(c client.Client, db string, query string) (results []client.Result, e
 	return response.Results, nil
 }
 
-func generateHealthMetrics(species string, nickname string, ch chan *client.Point, done chan bool) { //} (*client.Point, error) {
+func generateHealthMetrics(species string, nickname string, ch chan *client.Point, done chan bool) {
 	for {
 		tags := map[string]string{
 			"species":  species,
@@ -139,9 +147,6 @@ func generateHealthMetrics(species string, nickname string, ch chan *client.Poin
 
 		ch <- point
 	}
-
-	done <- true
-	close(ch)
 }
 
 func checkStopOSSignals(wg *sync.WaitGroup) *bool {
@@ -157,45 +162,3 @@ func checkStopOSSignals(wg *sync.WaitGroup) *bool {
 	}(&Signal)
 	return &Signal
 }
-
-// queryByAge retrieves animals above a certain age
-// func queryByAge(ctx context.Context, collection *mongo.Collection, age int) []animal {
-// 	var animals []animal
-// 	cur, err := collection.Find(ctx, bson.M{"age": bson.M{"$gt": age}})
-// 	if err != nil {
-// 		return animals
-// 	}
-
-// 	for cur.Next(ctx) {
-// 		// create a value into which the single document can be decoded
-// 		var elem animal
-// 		err := cur.Decode(&elem)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-
-// 		animals = append(animals, elem)
-// 	}
-
-// 	return animals
-// }
-
-// func queryByID(db *gorm.DB, id int) animal {
-// 	a := animal{}
-// 	db.First(&a, id)
-// 	return a
-// }
-
-// func addNewAnimal(ctx context.Context, collection *mongo.Collection,
-// 	species string, nickname string, zone int, age int) error { // (primitive.ObjectID, error) {
-// 	a := animal{
-// 		Species:  species,
-// 		Nickname: nickname,
-// 		Zone:     zone,
-// 		Age:      age}
-
-// 	_, err := collection.InsertOne(ctx, a)
-// 	// TODO getting the inserted ID causes a panic
-// 	//return insertResult.InsertedID.(primitive.ObjectID), err
-// 	return err
-// }
