@@ -79,7 +79,7 @@ func main() {
 			openChannels--
 		}
 
-		if len(batch.Points()) >= 50 || openChannels == 0 {
+		if len(batch.Points()) >= 5000 || openChannels == 0 {
 			fmt.Printf("Writing %d items to database...\n", len(batch.Points()))
 			if err = c.Write(batch); err != nil {
 				log.Fatal(err)
