@@ -41,14 +41,12 @@ func main() {
 	speciesTags := []string{"Tyrannousaurus rex", "Velociraptor", "Velociraptor"}
 
 	rand.Seed(time.Now().Unix())
-	numSpecimens := len(nicknameTags)
 
-	channel := make(chan *client.Point)
-	done := make(chan bool)
+	channel := make(chan *client.Point, 100)
 
 	for i := 0; i < len(nicknameTags); i++ {
 		// Generate random data points for each specimen
-		go generateHealthMetrics(speciesTags[i], nicknameTags[i], channel, done)
+		go generateHealthMetrics(speciesTags[i], nicknameTags[i], channel)
 	}
 
 	// Create batch for data points
@@ -64,17 +62,12 @@ func main() {
 
 	// Data points will be generated until a signal is captured
 	wg := sync.WaitGroup{}
-	detectSignal := checkStopOSSignals(&wg)
 
-	for openChannels := numSpecimens; openChannels > 0 && !*detectSignal; {
-		select {
-		case p := <-channel:
-			batch.AddPoint(p)
-		case <-done:
-			openChannels--
-		}
+	for detectSignal := checkStopOSSignals(&wg); !*detectSignal; {
+		p := <-channel
+		batch.AddPoint(p)
 
-		if len(batch.Points()) >= 5000 || openChannels == 0 {
+		if len(batch.Points()) >= 5000 || *detectSignal {
 			fmt.Printf("Writing %d items to database...\n", len(batch.Points()))
 			if err = c.Write(batch); err != nil {
 				log.Fatal(err)
@@ -88,7 +81,6 @@ func main() {
 	}
 
 	wg.Wait()
-	close(done)
 
 	// Now query the data that has been inserted
 	parameters := map[string]interface{}{
@@ -126,7 +118,7 @@ func query(c client.Client, db string, query string, parameters map[string]inter
 	return response.Results, nil
 }
 
-func generateHealthMetrics(species string, nickname string, ch chan *client.Point, done chan bool) {
+func generateHealthMetrics(species string, nickname string, ch chan *client.Point) {
 	for {
 		tags := map[string]string{
 			"species":  species,
