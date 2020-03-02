@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 	"time"
 
 	_ "github.com/influxdata/influxdb1-client"
@@ -59,7 +63,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	for openChannels := numSpecimens; openChannels > 0; {
+	// Data points will be generated until a signal is captured
+	wg := sync.WaitGroup{}
+	detectSignal := checkStopOSSignals(&wg)
+
+	for openChannels := numSpecimens; openChannels > 0 && !*detectSignal; {
 		select {
 		case p := <-channels[0]:
 			batch.AddPoint(p)
@@ -71,7 +79,7 @@ func main() {
 			openChannels--
 		}
 
-		if len(batch.Points()) >= 50 {
+		if len(batch.Points()) >= 50 || openChannels == 0 {
 			fmt.Printf("Writing %d items to database...\n", len(batch.Points()))
 			if err = c.Write(batch); err != nil {
 				log.Fatal(err)
@@ -84,6 +92,7 @@ func main() {
 		}
 	}
 
+	wg.Wait()
 	close(done)
 	// // Retrieve animals above a certain age
 	// animals := queryByAge(ctx, collection, 10)
@@ -111,8 +120,7 @@ func query(c client.Client, db string, query string) (results []client.Result, e
 }
 
 func generateHealthMetrics(species string, nickname string, ch chan *client.Point, done chan bool) { //} (*client.Point, error) {
-	// TODO Only 200 points for demo purposes, until graceful process exiting are implemented
-	for i := 0; i < 200; i++ {
+	for {
 		tags := map[string]string{
 			"species":  species,
 			"nickname": nickname,
@@ -134,7 +142,20 @@ func generateHealthMetrics(species string, nickname string, ch chan *client.Poin
 
 	done <- true
 	close(ch)
-	//return point, err
+}
+
+func checkStopOSSignals(wg *sync.WaitGroup) *bool {
+	Signal := false
+	go func(s *bool) {
+		wg.Add(1)
+		ch := make(chan os.Signal)
+		signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
+		<-ch
+		log.Println("Exit signals received... ")
+		*s = true
+		wg.Done()
+	}(&Signal)
+	return &Signal
 }
 
 // queryByAge retrieves animals above a certain age
