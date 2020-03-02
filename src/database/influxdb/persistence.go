@@ -71,7 +71,7 @@ func main() {
 			openChannels--
 		}
 
-		if len(batch.Points()) >= 50 { // Incorrect, only batches the first 5 reads (pub/sub probably needed)
+		if len(batch.Points()) >= 50 {
 			fmt.Printf("Writing %d items to database...\n", len(batch.Points()))
 			if err = c.Write(batch); err != nil {
 				log.Fatal(err)
@@ -111,7 +111,7 @@ func query(c client.Client, db string, query string) (results []client.Result, e
 }
 
 func generateHealthMetrics(species string, nickname string, ch chan *client.Point, done chan bool) { //} (*client.Point, error) {
-	// TODO Only 200 points for demo purposes, until graceful batching and process exiting are implemented
+	// TODO Only 200 points for demo purposes, until graceful process exiting are implemented
 	for i := 0; i < 200; i++ {
 		tags := map[string]string{
 			"species":  species,
