@@ -43,13 +43,12 @@ func main() {
 	rand.Seed(time.Now().Unix())
 	numSpecimens := len(nicknameTags)
 
-	channels := make([](chan *client.Point), numSpecimens)
+	channel := make(chan *client.Point)
 	done := make(chan bool)
 
 	for i := 0; i < len(nicknameTags); i++ {
-		channels[i] = make(chan *client.Point)
 		// Generate random data points for each specimen
-		go generateHealthMetrics(speciesTags[i], nicknameTags[i], channels[i], done)
+		go generateHealthMetrics(speciesTags[i], nicknameTags[i], channel, done)
 	}
 
 	// Create batch for data points
@@ -69,11 +68,7 @@ func main() {
 
 	for openChannels := numSpecimens; openChannels > 0 && !*detectSignal; {
 		select {
-		case p := <-channels[0]:
-			batch.AddPoint(p)
-		case p := <-channels[1]:
-			batch.AddPoint(p)
-		case p := <-channels[2]:
+		case p := <-channel:
 			batch.AddPoint(p)
 		case <-done:
 			openChannels--
