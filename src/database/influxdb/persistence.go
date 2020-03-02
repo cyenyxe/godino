@@ -32,39 +32,59 @@ func main() {
 
 	db := "dino"
 
-	// Create batch points
+	// Specimens in the reserve
+	nicknameTags := []string{"T-Rex", "Raptor", "Velo"}
+	speciesTags := []string{"Tyrannousaurus rex", "Velociraptor", "Velociraptor"}
+
+	rand.Seed(time.Now().Unix())
+	numSpecimens := len(nicknameTags)
+
+	channels := make([](chan *client.Point), numSpecimens)
+	done := make(chan bool)
+
+	for i := 0; i < len(nicknameTags); i++ {
+		channels[i] = make(chan *client.Point)
+		// Generate random data points for each specimen
+		go generateHealthMetrics(speciesTags[i], nicknameTags[i], channels[i], done)
+	}
+
+	// Create batch for data points
+	// Precision will restrict the time granularity of data points may seem duplicates
+	// This program can create data points very fast so 'ns' is needed
 	batch, err := client.NewBatchPoints(client.BatchPointsConfig{
 		Database:  db,
-		Precision: "s",
+		Precision: "ns",
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Specimens in the reserve
-	nicknameTags := []string{"T-Rex", "Raptor", "Velo"}
-	speciesTags := []string{"Tyrannousaurus rex", "Velociraptor", "Velociraptor"}
-
-	// Generate data points every 0.1 second
-	rand.Seed(time.Now().Unix())
-	for {
-		// Populate data point for a random specimen with random values
-		i := rand.Intn(len(nicknameTags))
-		point, err := generateHealthMetrics(speciesTags[i], nicknameTags[i])
-		if err != nil {
-			log.Println(err)
-			continue
+	for openChannels := numSpecimens; openChannels > 0; {
+		select {
+		case p := <-channels[0]:
+			batch.AddPoint(p)
+		case p := <-channels[1]:
+			batch.AddPoint(p)
+		case p := <-channels[2]:
+			batch.AddPoint(p)
+		case <-done:
+			openChannels--
 		}
 
-		batch.AddPoint(point)
-		// Inefficient, no batch writes in practice
-		if err = c.Write(batch); err != nil {
-			log.Fatal(err)
-		}
+		if len(batch.Points()) >= 50 { // Incorrect, only batches the first 5 reads (pub/sub probably needed)
+			fmt.Printf("Writing %d items to database...\n", len(batch.Points()))
+			if err = c.Write(batch); err != nil {
+				log.Fatal(err)
+			}
 
-		time.Sleep(100 * time.Millisecond)
+			batch, err = client.NewBatchPoints(client.BatchPointsConfig{
+				Database:  db,
+				Precision: "ns",
+			})
+		}
 	}
 
+	close(done)
 	// // Retrieve animals above a certain age
 	// animals := queryByAge(ctx, collection, 10)
 	// fmt.Println(animals)
@@ -90,18 +110,31 @@ func query(c client.Client, db string, query string) (results []client.Result, e
 	return response.Results, nil
 }
 
-func generateHealthMetrics(species string, nickname string) (*client.Point, error) {
-	tags := map[string]string{
-		"species":  species,
-		"nickname": nickname,
-	}
-	fields := map[string]interface{}{
-		"weight":      rand.Intn(500) + 1,
-		"temperature": rand.Intn(5) + 36,
-	}
-	fmt.Println(tags, fields["weight"], fields["temperature"])
+func generateHealthMetrics(species string, nickname string, ch chan *client.Point, done chan bool) { //} (*client.Point, error) {
+	// TODO Only 200 points for demo purposes, until graceful batching and process exiting are implemented
+	for i := 0; i < 200; i++ {
+		tags := map[string]string{
+			"species":  species,
+			"nickname": nickname,
+		}
+		fields := map[string]interface{}{
+			"weight":      rand.Intn(500) + 1,
+			"temperature": rand.Intn(5) + 36,
+		}
 
-	return client.NewPoint("health", tags, fields, time.Now())
+		// fmt.Println(tags, fields["weight"], fields["temperature"])
+
+		point, err := client.NewPoint("health", tags, fields, time.Now())
+		if err != nil {
+			log.Println(err)
+		}
+
+		ch <- point
+	}
+
+	done <- true
+	close(ch)
+	//return point, err
 }
 
 // queryByAge retrieves animals above a certain age
