@@ -61,6 +61,7 @@ func main() {
 	}
 
 	// Data points will be generated until a signal is captured
+	// TODO Possible race condition when accessing 'wg' because it is shared between main thread and goroutine?
 	wg := sync.WaitGroup{}
 
 	for detectSignal := checkStopOSSignals(&wg); !*detectSignal; {
