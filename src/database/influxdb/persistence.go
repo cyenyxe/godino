@@ -96,7 +96,10 @@ func main() {
 	close(done)
 
 	// Now query the data that has been inserted
-	result, err := query(c, db, "select * from health where nickname = 'Raptor' limit 10")
+	parameters := map[string]interface{}{
+		"nickname": "Velo",
+	}
+	result, err := query(c, db, "select * from health where nickname = $nickname limit 10", parameters)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -111,10 +114,11 @@ func main() {
 	}
 }
 
-func query(c client.Client, db string, query string, parameters ...string) (results []client.Result, err error) {
+func query(c client.Client, db string, query string, parameters map[string]interface{}) (results []client.Result, err error) {
 	q := client.Query{
-		Command:  query,
-		Database: db,
+		Command:    query,
+		Database:   db,
+		Parameters: parameters,
 	}
 
 	response, err := c.Query(q)
