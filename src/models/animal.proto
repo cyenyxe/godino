@@ -2,10 +2,19 @@ syntax = "proto3";
 
 package models;
 
-message animal {
+message Animal {
     uint32 id = 1;
     string species = 2;
     string nickname = 3;
     uint32 zone = 4;
     uint32 age = 5;
+}
+
+message Request {
+    string nickname = 1;
+}
+
+service DinoService {
+    rpc GetAnimal(Request) returns (Animal);
+    rpc GetAllAnimals(Request) returns (stream Animal);
 }

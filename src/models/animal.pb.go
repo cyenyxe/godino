@@ -7,7 +7,11 @@
 package models
 
 import (
+	context "context"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -104,19 +108,75 @@ func (x *Animal) GetAge() uint32 {
 	return 0
 }
 
+type Request struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Nickname string `protobuf:"bytes,1,opt,name=nickname,proto3" json:"nickname,omitempty"`
+}
+
+func (x *Request) Reset() {
+	*x = Request{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_animal_proto_msgTypes[1]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Request) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Request) ProtoMessage() {}
+
+func (x *Request) ProtoReflect() protoreflect.Message {
+	mi := &file_animal_proto_msgTypes[1]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Request.ProtoReflect.Descriptor instead.
+func (*Request) Descriptor() ([]byte, []int) {
+	return file_animal_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *Request) GetNickname() string {
+	if x != nil {
+		return x.Nickname
+	}
+	return ""
+}
+
 var File_animal_proto protoreflect.FileDescriptor
 
 var file_animal_proto_rawDesc = []byte{
 	0x0a, 0x0c, 0x61, 0x6e, 0x69, 0x6d, 0x61, 0x6c, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x06,
-	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x22, 0x74, 0x0a, 0x06, 0x61, 0x6e, 0x69, 0x6d, 0x61, 0x6c,
+	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x22, 0x74, 0x0a, 0x06, 0x41, 0x6e, 0x69, 0x6d, 0x61, 0x6c,
 	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x02, 0x69, 0x64,
 	0x12, 0x18, 0x0a, 0x07, 0x73, 0x70, 0x65, 0x63, 0x69, 0x65, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x07, 0x73, 0x70, 0x65, 0x63, 0x69, 0x65, 0x73, 0x12, 0x1a, 0x0a, 0x08, 0x6e, 0x69,
 	0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6e, 0x69,
 	0x63, 0x6b, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x7a, 0x6f, 0x6e, 0x65, 0x18, 0x04,
 	0x20, 0x01, 0x28, 0x0d, 0x52, 0x04, 0x7a, 0x6f, 0x6e, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x61, 0x67,
-	0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x61, 0x67, 0x65, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x65, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x61, 0x67, 0x65, 0x22, 0x25, 0x0a, 0x07,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1a, 0x0a, 0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e,
+	0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x6e, 0x69, 0x63, 0x6b, 0x6e,
+	0x61, 0x6d, 0x65, 0x32, 0x6f, 0x0a, 0x0b, 0x44, 0x69, 0x6e, 0x6f, 0x53, 0x65, 0x72, 0x76, 0x69,
+	0x63, 0x65, 0x12, 0x2c, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x41, 0x6e, 0x69, 0x6d, 0x61, 0x6c, 0x12,
+	0x0f, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x1a, 0x0e, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x41, 0x6e, 0x69, 0x6d, 0x61, 0x6c,
+	0x12, 0x32, 0x0a, 0x0d, 0x47, 0x65, 0x74, 0x41, 0x6c, 0x6c, 0x41, 0x6e, 0x69, 0x6d, 0x61, 0x6c,
+	0x73, 0x12, 0x0f, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x0e, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x41, 0x6e, 0x69, 0x6d,
+	0x61, 0x6c, 0x30, 0x01, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -131,13 +191,18 @@ func file_animal_proto_rawDescGZIP() []byte {
 	return file_animal_proto_rawDescData
 }
 
-var file_animal_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_animal_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_animal_proto_goTypes = []interface{}{
-	(*Animal)(nil), // 0: models.animal
+	(*Animal)(nil),  // 0: models.Animal
+	(*Request)(nil), // 1: models.Request
 }
 var file_animal_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
+	1, // 0: models.DinoService.GetAnimal:input_type -> models.Request
+	1, // 1: models.DinoService.GetAllAnimals:input_type -> models.Request
+	0, // 2: models.DinoService.GetAnimal:output_type -> models.Animal
+	0, // 3: models.DinoService.GetAllAnimals:output_type -> models.Animal
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -161,6 +226,18 @@ func file_animal_proto_init() {
 				return nil
 			}
 		}
+		file_animal_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Request); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -168,9 +245,9 @@ func file_animal_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_animal_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_animal_proto_goTypes,
 		DependencyIndexes: file_animal_proto_depIdxs,
@@ -180,4 +257,148 @@ func file_animal_proto_init() {
 	file_animal_proto_rawDesc = nil
 	file_animal_proto_goTypes = nil
 	file_animal_proto_depIdxs = nil
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConnInterface
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion6
+
+// DinoServiceClient is the client API for DinoService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type DinoServiceClient interface {
+	GetAnimal(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Animal, error)
+	GetAllAnimals(ctx context.Context, in *Request, opts ...grpc.CallOption) (DinoService_GetAllAnimalsClient, error)
+}
+
+type dinoServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewDinoServiceClient(cc grpc.ClientConnInterface) DinoServiceClient {
+	return &dinoServiceClient{cc}
+}
+
+func (c *dinoServiceClient) GetAnimal(ctx context.Context, in *Request, opts ...grpc.CallOption) (*Animal, error) {
+	out := new(Animal)
+	err := c.cc.Invoke(ctx, "/models.DinoService/GetAnimal", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dinoServiceClient) GetAllAnimals(ctx context.Context, in *Request, opts ...grpc.CallOption) (DinoService_GetAllAnimalsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_DinoService_serviceDesc.Streams[0], "/models.DinoService/GetAllAnimals", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &dinoServiceGetAllAnimalsClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type DinoService_GetAllAnimalsClient interface {
+	Recv() (*Animal, error)
+	grpc.ClientStream
+}
+
+type dinoServiceGetAllAnimalsClient struct {
+	grpc.ClientStream
+}
+
+func (x *dinoServiceGetAllAnimalsClient) Recv() (*Animal, error) {
+	m := new(Animal)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// DinoServiceServer is the server API for DinoService service.
+type DinoServiceServer interface {
+	GetAnimal(context.Context, *Request) (*Animal, error)
+	GetAllAnimals(*Request, DinoService_GetAllAnimalsServer) error
+}
+
+// UnimplementedDinoServiceServer can be embedded to have forward compatible implementations.
+type UnimplementedDinoServiceServer struct {
+}
+
+func (*UnimplementedDinoServiceServer) GetAnimal(context.Context, *Request) (*Animal, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAnimal not implemented")
+}
+func (*UnimplementedDinoServiceServer) GetAllAnimals(*Request, DinoService_GetAllAnimalsServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetAllAnimals not implemented")
+}
+
+func RegisterDinoServiceServer(s *grpc.Server, srv DinoServiceServer) {
+	s.RegisterService(&_DinoService_serviceDesc, srv)
+}
+
+func _DinoService_GetAnimal_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Request)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DinoServiceServer).GetAnimal(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/models.DinoService/GetAnimal",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DinoServiceServer).GetAnimal(ctx, req.(*Request))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DinoService_GetAllAnimals_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Request)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(DinoServiceServer).GetAllAnimals(m, &dinoServiceGetAllAnimalsServer{stream})
+}
+
+type DinoService_GetAllAnimalsServer interface {
+	Send(*Animal) error
+	grpc.ServerStream
+}
+
+type dinoServiceGetAllAnimalsServer struct {
+	grpc.ServerStream
+}
+
+func (x *dinoServiceGetAllAnimalsServer) Send(m *Animal) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+var _DinoService_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "models.DinoService",
+	HandlerType: (*DinoServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetAnimal",
+			Handler:    _DinoService_GetAnimal_Handler,
+		},
+	},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "GetAllAnimals",
+			Handler:       _DinoService_GetAllAnimals_Handler,
+			ServerStreams: true,
+		},
+	},
+	Metadata: "animal.proto",
 }
