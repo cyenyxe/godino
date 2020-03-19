@@ -15,6 +15,8 @@ func main() {
 		grpclog.Fatalf("Failed to listen: %v", err)
 	}
 
+	grpclog.Println("Listening on port 8282")
+
 	var opts []grpc.ServerOption
 	server := grpc.NewServer(opts...)
 	dinoServer := dinogrpc.NewServer()
