@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"godino/dinogrpc"
@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	listener, err := net.Listen("tcp", "8282")
+	listener, err := net.Listen("tcp", ":8282")
 	if err != nil {
 		grpclog.Fatalf("Failed to listen: %v", err)
 	}
