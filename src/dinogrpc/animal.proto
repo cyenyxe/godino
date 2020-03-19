@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package models;
+package dinogrpc;
 
 message Animal {
     uint32 id = 1;
