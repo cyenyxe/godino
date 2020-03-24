@@ -1,10 +1,9 @@
-package main
+package dinoapi
 
 import (
-	"fmt"
-	"log"
-
 	"github.com/jinzhu/gorm"
+
+	// Needed for database initialization
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
 
@@ -21,29 +20,6 @@ type Animal struct {
 // DinoDatabaseHandler is a handler for a database containing dinosaur information
 type DinoDatabaseHandler struct {
 	connection *gorm.DB
-}
-
-func main() {
-	// Connect to the database
-	// Without 'parseTime' set, the mapping breaks when it gets to the dates
-	handler, err := NewDinoDatabaseHandler("dinoadmin:dinoadmin@/dino?parseTime=true")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer handler.Close()
-
-	// Retrieve animals above a certain age
-	animals := handler.QueryByAge(10)
-	fmt.Println(animals)
-
-	// Retrieve animal with a certain ID
-	a := handler.QueryByID(1)
-	fmt.Println(a)
-
-	// Insert a duplicate animal
-	if _, err = handler.AddNewAnimal("Velociraptor", "Velo", 2, 20); err != nil {
-		log.Println(err)
-	}
 }
 
 // NewDinoDatabaseHandler creates a new handler for a database containing dinosaur information
@@ -77,6 +53,7 @@ func NewDinoDatabaseHandler(url string) (*DinoDatabaseHandler, error) {
 	return handler, nil
 }
 
+// Close closes the database connection
 func (handler *DinoDatabaseHandler) Close() {
 	handler.connection.Close()
 }
@@ -93,15 +70,22 @@ func (handler *DinoDatabaseHandler) AddNewAnimal(species string, nickname string
 	return a.ID, err
 }
 
-// QueryByAge retrieves a specimen above a certain age
-func (handler *DinoDatabaseHandler) QueryByAge(age int) []Animal {
+// FindAll retrieves all specimens
+func (handler *DinoDatabaseHandler) FindAll() []Animal {
+	animals := []Animal{}
+	handler.connection.Find(&animals)
+	return animals
+}
+
+// FindByAge retrieves a specimen above a certain age
+func (handler *DinoDatabaseHandler) FindByAge(age int) []Animal {
 	animals := []Animal{}
 	handler.connection.Find(&animals, "age > ?", age)
 	return animals
 }
 
-// QueryByID retrieves a specimen with a certain ID
-func (handler *DinoDatabaseHandler) QueryByID(id int) Animal {
+// FindByID retrieves a specimen with a certain ID
+func (handler *DinoDatabaseHandler) FindByID(id int) Animal {
 	a := Animal{}
 	handler.connection.First(&a, id)
 	return a
