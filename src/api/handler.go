@@ -38,15 +38,15 @@ func NewDinoDatabaseHandler(url string) (*DinoDatabaseHandler, error) {
 	db.DropTableIfExists(&Animal{})
 	db.AutoMigrate(&Animal{})
 
-	if _, err = handler.AddNewAnimal("Tyrannousaurus rex", "T-Rex", 1, 10); err != nil {
+	if _, err = handler.CreateAndAddNewAnimal("Tyrannousaurus rex", "T-Rex", 1, 10); err != nil {
 		return handler, err
 	}
 
-	if _, err = handler.AddNewAnimal("Velociraptor", "Raptor", 2, 25); err != nil {
+	if _, err = handler.CreateAndAddNewAnimal("Velociraptor", "Raptor", 2, 25); err != nil {
 		return handler, err
 	}
 
-	if _, err = handler.AddNewAnimal("Velociraptor", "Velo", 2, 20); err != nil {
+	if _, err = handler.CreateAndAddNewAnimal("Velociraptor", "Velo", 2, 20); err != nil {
 		return handler, err
 	}
 
@@ -58,14 +58,19 @@ func (handler *DinoDatabaseHandler) Close() {
 	handler.connection.Close()
 }
 
-// AddNewAnimal inserts a specimen in the dinosaur database
-func (handler *DinoDatabaseHandler) AddNewAnimal(species string, nickname string, zone int, age int) (uint, error) {
+// CreateAndAddNewAnimal creates a specimen and inserts it in the dinosaur database
+func (handler *DinoDatabaseHandler) CreateAndAddNewAnimal(species string, nickname string, zone int, age int) (uint, error) {
 	a := Animal{
 		Species:  species,
 		Nickname: nickname,
 		Zone:     zone,
 		Age:      age}
 
+	return handler.AddNewAnimal(&a)
+}
+
+// AddNewAnimal inserts a specimen in the dinosaur database
+func (handler *DinoDatabaseHandler) AddNewAnimal(a *Animal) (uint, error) {
 	err := handler.connection.Save(&a).Error
 	return a.ID, err
 }
